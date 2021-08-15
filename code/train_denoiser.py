@@ -168,8 +168,7 @@ def main():
             test_loss = test(test_loader, denoiser, criterion, args.noise_sd, args.print_freq, args.outdir)
             test_acc = 'NA'
         elif args.objective in ['classification', 'stability']:
-            # train_loss = train(train_loader, denoiser, criterion, optimizer, epoch, args.noise_sd, clf)
-            train_loss = 0.0
+            train_loss = train(train_loader, denoiser, criterion, optimizer, epoch, args.noise_sd, clf)
             if args.dataset == 'imagenet':
                 test_loss, test_acc = test_with_classifier(test_loader, denoiser, criterion, args.noise_sd, args.print_freq, clf)
             else:
