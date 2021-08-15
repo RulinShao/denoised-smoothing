@@ -15,6 +15,7 @@ IMAGENET_CLASSIFIERS = [
                         'resnet18', 
                         'resnet34', 
                         'resnet50',
+                        'vit_small_patch16_224'
                         ]
 
 CIFAR10_CLASSIFIERS = [
