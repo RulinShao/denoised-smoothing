@@ -52,7 +52,7 @@ def get_architecture(arch: str, dataset: str, pytorch_pretrained: bool=False) ->
     elif arch == "resnet50" and dataset == "imagenet":
         model = torch.nn.DataParallel(resnet50(pretrained=pytorch_pretrained)).cuda()
         cudnn.benchmark = True
-    elif dataset == "imagenet":
+    elif "vit" in arch and dataset == "imagenet":
         model = create_model(arch, pretrained=pytorch_pretrained, num_classes=1000, in_chans=3).cuda()
 
     ## Cifar classifiers
