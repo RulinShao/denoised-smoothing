@@ -1,7 +1,5 @@
 import numpy as np
 import pandas as pd
-import seaborn as sns
-sns.set()
 
 
 class Accuracy(object):
@@ -27,6 +25,13 @@ class ApproximateAccuracy(Accuracy):
 
 
 if __name__ == '__main__':
-    file = ApproximateAccuracy('certi_deno/vit_small/sigma_25')
+    filename = 'certi_deno/vit_small/sigma_25'
+    ck_radii = np.array([0.1 * r for r in range(10)])
+
+    file = ApproximateAccuracy(filename)
+    print('Loaded results from {}'.format(filename))
     abstention_rate = file.get_abstention_rate()
-    # radii = file.at_radii()
+    print('abstention rate is {}'.format(abstention_rate))
+    radii = file.at_radii(ck_radii)
+    print('certified radii w.r.t. {} is'.format(ck_radii))
+    print(radii)

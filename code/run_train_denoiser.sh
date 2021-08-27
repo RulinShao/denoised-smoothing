@@ -6,8 +6,8 @@ python3 train_denoiser.py \
   --objective stability \
   --noise_sd 0.25 \
   --arch imagenet_dncnn \
-  --outdir denoiser/vit_small/ \
-  --classifier vit_small_patch16_224 \
+  --outdir denoiser/lenet/ \
+  --classifier lenet \
   --epochs 25 \
   --lr 1e-5 \
   --batch 64
