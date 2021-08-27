@@ -6,8 +6,8 @@ python3 train_denoiser.py \
   --objective stability \
   --noise_sd 0.25 \
   --arch imagenet_dncnn \
-  --outdir denoiser/lenet/sigma_25 \
-  --classifier lenet \
+  --outdir denoiser/resnet34/sigma_25 \
+  --classifier resnet34 \
   --epochs 25 \
   --lr 1e-5 \
   --batch 64
