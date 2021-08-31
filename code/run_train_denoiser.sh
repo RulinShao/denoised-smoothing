@@ -1,4 +1,4 @@
-export IMAGENET_DIR=~/dataset/ilsvrc2012
+export IMAGENET_DIR=/home/xc150/certify/discrete/smoothing-master
 
 
 python3 train_denoiser.py \
