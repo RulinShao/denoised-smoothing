@@ -2,8 +2,8 @@ export IMAGENET_DIR=/home/xc150/certify/discrete/smoothing-master
 
 python3 certify.py \
   --dataset imagenet \
-  --base_classifier resnet18 \
+  --base_classifier resnet152 \
   --sigma 0.25 \
-  --outfile certi_deno/resnet18/sigma_25 \
+  --outfile certi_deno/resnet152/sigma_25 \
   --skip 20 \
-  --denoiser denoiser/resnet18/best.pth.tar \
+  --denoiser denoiser/resnet152/best.pth.tar \
