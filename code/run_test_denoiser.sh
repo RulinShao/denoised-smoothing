@@ -1,7 +1,7 @@
 
 export IMAGENET_DIR=/home/xc150/certify/discrete/smoothing-master
 
-python3 test_denoiser.py \
+python test_denoiser.py \
   --dataset imagenet \
   --noise_sd 0.25 \
   --denoiser denoiser/resnet152/sigma_25/best.pth.tar \

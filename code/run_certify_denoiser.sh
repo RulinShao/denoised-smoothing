@@ -1,6 +1,6 @@
 export IMAGENET_DIR=/home/xc150/certify/discrete/smoothing-master
 
-python3 certify.py \
+python certify.py \
   --dataset imagenet \
   --base_classifier resnet152 \
   --sigma 0.25 \

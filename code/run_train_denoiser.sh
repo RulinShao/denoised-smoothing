@@ -1,7 +1,7 @@
 export IMAGENET_DIR=/home/xc150/certify/discrete/smoothing-master
 
 
-python3 train_denoiser.py \
+python train_denoiser.py \
   --dataset imagenet \
   --objective stability \
   --noise_sd 0.25 \
