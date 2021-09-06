@@ -6,8 +6,8 @@ python train_denoiser.py \
   --objective stability \
   --noise_sd 0.25 \
   --arch imagenet_dncnn \
-  --outdir denoiser/resnet152/sigma_25 \
-  --classifier resnet152 \
+  --outdir denoiser/vit_base/sigma_25 \
+  --classifier vit_base_patch16_224 \
   --epochs 25 \
   --lr 1e-5 \
   --batch 64
