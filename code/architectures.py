@@ -6,6 +6,9 @@ from archs.wrn import WideResNet
 from datasets import get_normalize_layer, get_input_center_layer
 from torch.nn.functional import interpolate
 from torchvision.models.resnet import resnet18, resnet34, resnet50, resnet101, resnet152
+from torchvision.models.vgg import vgg16
+# from torchvision.models.mobilenet_v2 import mobilenet_v2
+# from torchvision.models.swin_transformer.SwinTransformer import swin_t
 from timm.models import load_checkpoint, create_model
 
 import torch
@@ -18,8 +21,12 @@ IMAGENET_CLASSIFIERS = [
                         'resnet50',
                         'resnet101',
                         'resnet152',
+                        'vgg16',
+                        'mobilenet_v2',
                         'vit_small_patch16_224',
-                        'vit_base_patch16_224'
+                        'vit_base_patch16_224',
+                        'vit_base_patch16_224_sam',
+                        'deit_tiny_patch16_224',
                         ]
 
 CIFAR10_CLASSIFIERS = [
@@ -60,8 +67,14 @@ def get_architecture(arch: str, dataset: str, pytorch_pretrained: bool=False) ->
     elif arch == "resnet152" and dataset == "imagenet":
         model = torch.nn.DataParallel(resnet152(pretrained=pytorch_pretrained)).cuda()
         cudnn.benchmark = True
+    elif arch == "vgg16" and dataset == "imagenet":
+        model = torch.nn.DataParallel(vgg16(pretrained=pytorch_pretrained)).cuda()
+    elif arch == "mobilenet_v2" and dataset == "imagenet":
+        model = torch.nn.DataParallel(mobilenet_v2(pretrained=pytorch_pretrained)).cuda()
     elif "vit" in arch and dataset == "imagenet":
-        model = create_model(arch, pretrained=pytorch_pretrained, num_classes=1000, in_chans=3).cuda()
+        model = torch.nn.DataParallel(create_model(arch, pretrained=pytorch_pretrained, num_classes=1000, in_chans=3)).cuda()
+    elif "deit" in arch and dataset == "imagenet":
+        model = torch.nn.DataParallel(create_model(arch, pretrained=pytorch_pretrained, num_classes=1000, in_chans=3)).cuda()
 
     ## Cifar classifiers
     elif arch == "cifar_resnet20":
