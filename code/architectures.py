@@ -27,6 +27,12 @@ IMAGENET_CLASSIFIERS = [
                         'vit_base_patch16_224',
                         'vit_base_patch16_224_sam',
                         'deit_tiny_patch16_224',
+                        'swin_tiny_patch4_window7_224',
+                        'deit_tiny_distilled_patch16_224',
+                        'vit_tiny_patch16_22',
+                        'deit_small_patch16_224',
+                        'deit_small_distilled_patch16_224',
+                        'swin_small_patch4_window7_224'
                         ]
 
 CIFAR10_CLASSIFIERS = [
@@ -74,6 +80,8 @@ def get_architecture(arch: str, dataset: str, pytorch_pretrained: bool=False) ->
     elif "vit" in arch and dataset == "imagenet":
         model = torch.nn.DataParallel(create_model(arch, pretrained=pytorch_pretrained, num_classes=1000, in_chans=3)).cuda()
     elif "deit" in arch and dataset == "imagenet":
+        model = torch.nn.DataParallel(create_model(arch, pretrained=pytorch_pretrained, num_classes=1000, in_chans=3)).cuda()
+    elif "swin" in arch and dataset == "imagenet":
         model = torch.nn.DataParallel(create_model(arch, pretrained=pytorch_pretrained, num_classes=1000, in_chans=3)).cuda()
 
     ## Cifar classifiers
