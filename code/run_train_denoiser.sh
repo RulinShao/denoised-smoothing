@@ -1,7 +1,7 @@
 #!/bin/bash
 export IMAGENET_DIR=/home/ubuntu/data/ilsvrc2012/
 
-for model in swin_tiny_patch4_window7_224 deit_tiny_distilled_patch16_224 vit_tiny_patch16_22 deit_small_patch16_224 deit_small_distilled_patch16_224 swin_small_patch4_window7_224
+for model in convnext_small convnext_tiny 
 do
   echo $model
   python train_denoiser.py \
@@ -13,5 +13,5 @@ do
     --classifier $model \
     --epochs 25 \
     --lr 1e-5 \
-    --batch 256 #64
+    --batch 128
 done

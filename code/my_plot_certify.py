@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import os
 
 
 class Accuracy(object):
@@ -35,8 +36,9 @@ def print_radii(filename):
     print(list(radii))
 
 def plot_curve():
-    filename_list = ['../certi/sigma_25_vit_s', '../certi/sigma_25_res18']
-    names = ['ViT-S/16', 'ResNet18']
+    files = os.listdir('../certi')
+    filename_list = ['../certi/' + file + '/sigma_25' for file in files]
+    names = files
     ck_radii = np.array([0.01 * r for r in range(100)])
     radii_list = []
 
@@ -54,7 +56,8 @@ def plot_curve():
         # plt.plot(ck_radii, res18, label="ResNet18", marker='.', color="coral", linewidth=3, markersize=8)
     ax.set_xlabel('Radius', fontsize=20)
     ax.set_ylabel('Certified Accuracy', fontsize=20)
-    plt.legend(fontsize=18)
+    plt.legend(fontsize=8)
+    plt.savefig('my_plot.png')
     plt.show()
 
 

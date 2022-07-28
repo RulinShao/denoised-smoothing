@@ -1,9 +1,15 @@
-export IMAGENET_DIR=/home/xc150/certify/discrete/smoothing-master
+#!/bin/bash
+export IMAGENET_DIR=/home/ubuntu/data/ilsvrc2012/
 
-python certify.py \
-  --dataset imagenet \
-  --base_classifier resnet152 \
-  --sigma 0.25 \
-  --outfile certi_deno/resnet152/sigma_25 \
-  --skip 20 \
-  --denoiser denoiser/resnet152/sigma_25/best.pth.tar \
+# for model in vgg16 deit_tiny_patch16_224 deit_small_patch16_224 deit_small_distilled_patch16_224
+for model in vgg16 deit_tiny_distilled_patch16_224
+do
+  echo $model
+  python certify.py \
+    --dataset imagenet \
+    --base_classifier $model \
+    --sigma 0.25 \
+    --outfile certi_deno/$model/sigma_25 \
+    --skip 20 \
+    --denoiser denoiser/$model/sigma_25/best.pth.tar
+done
