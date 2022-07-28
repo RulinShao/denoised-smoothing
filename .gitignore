@@ -105,3 +105,5 @@ venv.bak/
 
 dataset_cache/
 log.txt
+
+*.tar
