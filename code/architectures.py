@@ -11,6 +11,7 @@ from torchvision.models.vgg import vgg16
 # from torchvision.models.swin_transformer.SwinTransformer import swin_t
 from timm.models import load_checkpoint, create_model
 from archs.t2t_vit import *
+from pytorchcv.model_provider import get_model as ptcv_get_model
 
 import torch
 import torch.backends.cudnn as cudnn
@@ -40,6 +41,7 @@ IMAGENET_CLASSIFIERS = [
                         't2t_vit_24',
                         't2t_vit_t_14',
                         't2t_vit_t_24',
+                        'seresnet50',
                         ]
 
 CIFAR10_CLASSIFIERS = [
@@ -101,6 +103,8 @@ def get_architecture(arch: str, dataset: str, pytorch_pretrained: bool=False) ->
         model = torch.nn.DataParallel(create_model(arch, pretrained=pytorch_pretrained, num_classes=1000, in_chans=3)).cuda()
     elif "convnext" in arch and dataset == "imagenet":
         model = torch.nn.DataParallel(create_model(arch, pretrained=pytorch_pretrained, num_classes=1000, in_chans=3)).cuda()
+    elif arch == "seresnet50":
+        model = ptcv_get_model("seresnet50", pretrained=True)
     
 
     ## Cifar classifiers
