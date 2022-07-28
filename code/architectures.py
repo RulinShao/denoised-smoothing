@@ -10,6 +10,7 @@ from torchvision.models.vgg import vgg16
 # from torchvision.models.mobilenet_v2 import mobilenet_v2
 # from torchvision.models.swin_transformer.SwinTransformer import swin_t
 from timm.models import load_checkpoint, create_model
+from archs.t2t_vit import *
 
 import torch
 import torch.backends.cudnn as cudnn
@@ -35,6 +36,10 @@ IMAGENET_CLASSIFIERS = [
                         'swin_small_patch4_window7_224',
                         'convnext_tiny',
                         'convnext_small',
+                        't2t_vit_14',
+                        't2t_vit_24',
+                        't2t_vit_t_14',
+                        't2t_vit_t_24',
                         ]
 
 CIFAR10_CLASSIFIERS = [
@@ -51,6 +56,11 @@ CLASSIFIERS_ARCHITECTURES = IMAGENET_CLASSIFIERS + CIFAR10_CLASSIFIERS
 DENOISERS_ARCHITECTURES = ["cifar_dncnn", "cifar_dncnn_wide", "memnet", # cifar10 denoisers
                             'imagenet_dncnn', 'imagenet_memnet' # imagenet denoisers
                         ]
+
+checkpoint_paths = {'t2t_vit_14': '/home/ubuntu/ckpt/81.5_T2T_ViT_14.pth.tar',
+                    'T2t_vit_t_24': '/home/ubuntu/ckpt/82.6_T2T_ViTt_24.pth.tar',
+                    't2t_vit_t_14': '/home/ubuntu/ckpt/81.7_T2T_ViTt_14.pth.tar',
+                    }
 
 def get_architecture(arch: str, dataset: str, pytorch_pretrained: bool=False) -> torch.nn.Module:
     """ Return a neural network (with random weights)
@@ -79,6 +89,10 @@ def get_architecture(arch: str, dataset: str, pytorch_pretrained: bool=False) ->
         model = torch.nn.DataParallel(vgg16(pretrained=pytorch_pretrained)).cuda()
     elif arch == "mobilenet_v2" and dataset == "imagenet":
         model = torch.nn.DataParallel(mobilenet_v2(pretrained=pytorch_pretrained)).cuda()
+    elif "t2t" in arch and dataset == "imagenet":
+        model = create_model(arch, pretrained=True, num_classes=1000, in_chans=3)
+        load_checkpoint(model, checkpoint_paths[arch], True)
+        model = torch.nn.DataParallel(model).cuda()
     elif "vit" in arch and dataset == "imagenet":
         model = torch.nn.DataParallel(create_model(arch, pretrained=pytorch_pretrained, num_classes=1000, in_chans=3)).cuda()
     elif "deit" in arch and dataset == "imagenet":
