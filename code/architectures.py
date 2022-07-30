@@ -42,6 +42,7 @@ IMAGENET_CLASSIFIERS = [
                         't2t_vit_t_14',
                         't2t_vit_t_24',
                         'seresnet50',
+                        'vit_base_patch16_224_sam',
                         ]
 
 CIFAR10_CLASSIFIERS = [
