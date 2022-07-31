@@ -2,7 +2,7 @@
 export IMAGENET_DIR=/home/ubuntu/data/ilsvrc2012/
 
 # for model in t2t_vit_14 t2t_vit_t_14 t2t_vit_24 t2t_vit_t_24
-for model in seresnet50
+for model in vit_base_patch16_224_sam
 do
   echo $model
   python train_denoiser.py \
@@ -14,5 +14,5 @@ do
     --classifier $model \
     --epochs 25 \
     --lr 1e-5 \
-    --batch 16
+    --batch 2 #16
 done
