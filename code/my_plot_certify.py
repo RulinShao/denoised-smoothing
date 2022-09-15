@@ -30,7 +30,7 @@ def print_radii(filename):
     file = ApproximateAccuracy(filename)
     print('Loaded results from {}'.format(filename))
     abstention_rate = file.get_abstention_rate()
-    print('abstention rate is {}'.format(abstention_rate))
+    # print('abstention rate is {}'.format(abstention_rate))
     radii = file.at_radii(ck_radii)
     print('certified radii w.r.t. {} is'.format(ck_radii))
     print(list(radii))
@@ -65,7 +65,9 @@ def plot_curve():
 
 
 if __name__ == '__main__':
-    # filename = '../certi/sigma_25_res18'
-    # print_radii(filename)
+    files = os.listdir('../certi')
+    filename_list = ['../certi/' + file + '/sigma_25' for file in files]
+    for filename in filename_list:
+        print_radii(filename)
     plot_curve()
 

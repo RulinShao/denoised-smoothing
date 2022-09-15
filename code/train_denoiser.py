@@ -237,6 +237,8 @@ def train(loader: DataLoader, denoiser: torch.nn.Module, criterion, optimizer: O
         classifier.eval()
 
     for i, (inputs, targets) in enumerate(loader):
+        if i >1:
+            break
         # measure data loading time
         data_time.update(time.time() - end)
 
