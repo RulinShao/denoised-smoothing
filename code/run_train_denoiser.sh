@@ -2,17 +2,52 @@
 export IMAGENET_DIR=/home/ubuntu/data/ilsvrc2012/
 
 # for model in t2t_vit_14 t2t_vit_t_14 t2t_vit_24 t2t_vit_t_24
-for model in vit_base_patch16_224_sam
-do
-  echo $model
-  python train_denoiser.py \
+# for model in ViT-B/16
+# do
+#   python train_denoiser_clip.py \
+#     --dataset imagenet \
+#     --objective stability \
+#     --noise_sd 0.25 \
+#     --arch imagenet_dncnn \
+#     --outdir denoiser/clip_vit16/sigma_25 \
+#     --classifier ViT-B/16 \
+#     --epochs 25 \
+#     --lr 1e-5 \
+#     --batch 64
+# done
+
+# python train_denoiser_clip.py \
+#     --dataset imagenet \
+#     --objective stability \
+#     --noise_sd 0.25 \
+#     --arch imagenet_dncnn \
+#     --outdir denoiser/clip_vit16/sigma_25 \
+#     --classifier ViT-B/16 \
+#     --clf_head_ckpt /home/ubuntu/RobustCLIP/head_ckpt/imagenet/vit16/clip_vit16_nn2_clf.pth \
+#     --epochs 25 \
+#     --lr 1e-5 \
+#     --batch 64
+
+python train_denoiser_clip.py \
     --dataset imagenet \
     --objective stability \
-    --noise_sd 0.25 \
+    --noise_sd 0.5 \
     --arch imagenet_dncnn \
-    --outdir denoiser/$model/sigma_25 \
-    --classifier $model \
+    --outdir denoiser/clip_vit16/sigma_50 \
+    --classifier ViT-B/16 \
+    --clf_head_ckpt /home/ubuntu/RobustCLIP/head_ckpt/imagenet/vit16/clip_vit16_nn2_clf.pth \
     --epochs 25 \
     --lr 1e-5 \
-    --batch 2 #16
-done
+    --batch 64
+
+python train_denoiser_clip.py \
+    --dataset imagenet \
+    --objective stability \
+    --noise_sd 1.0 \
+    --arch imagenet_dncnn \
+    --outdir denoiser/clip_vit16/sigma_100 \
+    --classifier ViT-B/16 \
+    --clf_head_ckpt /home/ubuntu/RobustCLIP/head_ckpt/imagenet/vit16/clip_vit16_nn2_clf.pth \
+    --epochs 25 \
+    --lr 1e-5 \
+    --batch 64

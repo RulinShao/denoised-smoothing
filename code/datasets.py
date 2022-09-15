@@ -20,10 +20,10 @@ IMAGENET_LOC_ENV = "IMAGENET_DIR"
 DATASETS = ["imagenet", "imagenet32", "cifar10"]
 
 
-def get_dataset(dataset: str, split: str) -> Dataset:
+def get_dataset(dataset: str, split: str, preprocess=None) -> Dataset:
     """Return the dataset as a PyTorch Dataset object"""
     if dataset == "imagenet":
-        return _imagenet(split)
+        return _imagenet(split, preprocess)
     
     elif dataset == "imagenet32":
         return _imagenet32(split)
@@ -80,7 +80,7 @@ def _cifar10(split: str) -> Dataset:
         raise Exception("Unknown split name.")
 
 
-def _imagenet(split: str) -> Dataset:
+def _imagenet(split: str, preprocess) -> Dataset:
     if not IMAGENET_LOC_ENV in os.environ:
         raise RuntimeError("environment variable for ImageNet directory not set")
 
@@ -99,6 +99,11 @@ def _imagenet(split: str) -> Dataset:
             transforms.CenterCrop(224),
             transforms.ToTensor()
         ])
+    
+    if preprocess is not None:
+        # For CLIP
+        transform = preprocess
+    
     return datasets.ImageFolder(subdir, transform)
 
 
