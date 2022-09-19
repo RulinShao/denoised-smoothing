@@ -42,7 +42,9 @@ IMAGENET_CLASSIFIERS = [
                         't2t_vit_t_14',
                         't2t_vit_t_24',
                         'seresnet50',
+                        'seresnet34',
                         'vit_base_patch16_224_sam',
+                        'vit_large_patch16_224',
                         ]
 
 CIFAR10_CLASSIFIERS = [
@@ -104,8 +106,8 @@ def get_architecture(arch: str, dataset: str, pytorch_pretrained: bool=False) ->
         model = torch.nn.DataParallel(create_model(arch, pretrained=pytorch_pretrained, num_classes=1000, in_chans=3)).cuda()
     elif "convnext" in arch and dataset == "imagenet":
         model = torch.nn.DataParallel(create_model(arch, pretrained=pytorch_pretrained, num_classes=1000, in_chans=3)).cuda()
-    elif arch == "seresnet50":
-        model = ptcv_get_model("seresnet50", pretrained=True)
+    elif "seresnet" in arch:
+        model = ptcv_get_model(arch, pretrained=True)
     
 
     ## Cifar classifiers
