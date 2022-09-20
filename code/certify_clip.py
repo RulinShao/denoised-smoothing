@@ -9,13 +9,14 @@ import datetime
 import os
 import torch
 import clip
-from clip_modeling import CLIPVisionLinearProbing
+from clip_modeling import CLIPVisionLinearProbing, CLIPDualStreamForClassification
 
 
 parser = argparse.ArgumentParser(description='Certify many examples')
 parser.add_argument("--dataset", choices=DATASETS, help="which dataset")
 parser.add_argument("--clf_head_ckpt", type=str, default="/home/ubuntu/RobustCLIP/head_ckpt/imagenet/vit16/clip_vit16_nn2_clf.pth", 
                     help="path to save or saved sklearn classifier")
+parser.add_argument("--dual_alpha", type=float, default=0.0)
 parser.add_argument("--sigma", type=float, help="noise hyperparameter")
 parser.add_argument("--outfile", type=str, help="output file")
 parser.add_argument("--batch", type=int, default=1000, help="batch size")
@@ -44,7 +45,7 @@ else:
 if __name__ == "__main__":
     # load the base classifier
     base_classifier, preprocess = clip.load("ViT-B/16")
-    base_classifier = CLIPVisionLinearProbing(base_classifier.cuda(), args=args)
+    base_classifier = CLIPDualStreamForClassification(base_classifier.cuda(), args=args)
 
     if args.denoiser != '':
         checkpoint = torch.load(args.denoiser)

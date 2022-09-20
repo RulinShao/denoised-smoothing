@@ -10,6 +10,8 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 import pickle
 
+from imagenet_utils import imagenet_classes
+
 
 def requires_grad_(model:torch.nn.Module, requires_grad:bool) -> None:
     for param in model.parameters():
@@ -70,7 +72,7 @@ class CLIPModelForZeroShotClassication(nn.Module):
     (orgianl) do average on all prompt embeddings
     (ours) we want to do predictions but do argmax over all templates TODO
     """
-    def __init__(self, model, classes, preprocess=None, args=None):
+    def __init__(self, model, classes=imagenet_classes, args=None):
         super().__init__()
         self.model = model
         if args.dataset == 'imagenet':
@@ -107,16 +109,16 @@ class CLIPModelForZeroShotClassication(nn.Module):
 
 
 class CLIPDualStreamForClassification(nn.Module):
-    def __init__(self, model, classes, preprocess=None, args=None):
+    def __init__(self, model, classes=imagenet_classes, args=None):
         super().__init__()
         self.alpha = args.dual_alpha
         assert self.alpha >= 0 and self.alpha <=1
         if not self.alpha == 0.0:
             print(f"Initializing zero-shot classifier...")
-            self.zero_shot_model = CLIPModelForZeroShotClassication(model, classes, preprocess, args)
+            self.zero_shot_model = CLIPModelForZeroShotClassication(model, classes, args)
         if not self.alpha == 1.0:
             print(f"Initializing linear probing classifier...")
-            self.vision_clf_model = CLIPVisionLinearProbing(model, classes, preprocess, args)
+            self.vision_clf_model = CLIPVisionLinearProbing(model, args)
 
     def forward(self, image_input):
         if not self.alpha == 0.0:

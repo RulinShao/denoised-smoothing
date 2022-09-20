@@ -18,6 +18,7 @@ export IMAGENET_DIR=/home/ubuntu/data/ilsvrc2012/
 python certify_clip.py \
   --dataset imagenet \
   --sigma 0.25 \
-  --outfile certi_deno/clip_vit16/sigma_25 \
+  --outfile certi_deno/clip_vit16_dual/sigma_25 \
   --skip 20 \
-  --denoiser denoiser/clip_vit16/sigma_25/best.pth.tar
+  --denoiser denoiser/clip_vit16/sigma_25/best.pth.tar \
+  --dual_alpha 0.5
