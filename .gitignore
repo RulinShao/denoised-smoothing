@@ -107,3 +107,5 @@ dataset_cache/
 log.txt
 
 *.tar
+denoiser/
+certi_deno/
