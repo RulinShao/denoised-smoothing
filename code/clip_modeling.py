@@ -40,6 +40,22 @@ class LogisticRegression(nn.Module):
          return outputs
 
 
+class CLIPImageEncoder(nn.Module):
+    def __init__(self, model, args=None):
+        super().__init__()
+
+        self.args = args
+        self.model = model
+        self._freeze_encoder()
+    
+    def _freeze_encoder(self,):
+        requires_grad_(self.model, False)
+
+    def forward(self, image_input):
+        features = self.model.encode_image(image_input).type(image_input.type())
+        return features
+
+
 class CLIPVisionLinearProbing(nn.Module):
     def __init__(self, model, args=None):
         super().__init__()
