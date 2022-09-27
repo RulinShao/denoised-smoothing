@@ -135,13 +135,13 @@ def test(loader: DataLoader, model: torch.nn.Module, criterion, noise_sd: float,
                     i, len(loader), batch_time=batch_time,
                     data_time=data_time, loss=losses))
 
-        pil = toPilImage(inputs[0].cpu())
-        image_path = os.path.join(outdir, 'clean.png')
-        pil.save(image_path)
+        # pil = toPilImage(inputs[0].cpu())
+        # image_path = os.path.join(outdir, 'clean.png')
+        # pil.save(image_path)
 
-        pil = toPilImage(outputs[0].cpu())
-        image_path = os.path.join(outdir, 'denoised.png')
-        pil.save(image_path)
+        # pil = toPilImage(outputs[0].cpu())
+        # image_path = os.path.join(outdir, 'denoised.png')
+        # pil.save(image_path)
 
         return losses.avg
 
