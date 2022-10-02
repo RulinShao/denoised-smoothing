@@ -20,7 +20,7 @@ import time
 import torch
 import torchvision
 import clip
-from clip_modeling import CLIPVisionLinearProbing
+from clip_modeling import CLIPVisionLinearProbing, CLIPImageEncoder
 
 
 parser = argparse.ArgumentParser(description='PyTorch ImageNet Training')
@@ -51,7 +51,7 @@ parser.add_argument('--noise_sd', default=0.0, type=float,
                     help="standard deviation of noise distribution for data augmentation")
 parser.add_argument('--objective', default='denoising', type=str,
                     help="the objective that is used to train the denoiser",
-                    choices=['denoising', 'classification', 'stability'])
+                    choices=['denoising', 'classification', 'stability', 'clip_feat_denoising'])
 parser.add_argument('--classifier', default='', type=str,
                     help='path to the classifier used with the `classificaiton`'
                      'or `stability` objectives of the denoiser.')
@@ -94,7 +94,10 @@ def main():
     copy_code(args.outdir)
 
     clf, preprocess = clip.load(args.classifier)
-    clf = CLIPVisionLinearProbing(clf.cuda(), args=args)
+    if args.objective == 'clip_feat_denoising':
+        clf = CLIPImageEncoder(clf.cuda(), args=args)
+    else:
+        clf = CLIPVisionLinearProbing(clf.cuda(), args=args)
     
     train_dataset = get_dataset(args.dataset, 'train', preprocess=preprocess)
     test_dataset = get_dataset(args.dataset, 'test', preprocess=preprocess)
@@ -149,7 +152,7 @@ def main():
         init_logfile(logfilename, "epoch\ttime\tlr\ttrainloss\ttestloss\ttestAcc")
 
 
-    if args.objective == 'denoising':
+    if args.objective == 'denoising' or args.objective == 'clip_feat_denoising':
         criterion = MSELoss(size_average=None, reduce=None, reduction = 'mean').cuda()
         best_loss = 1e6
 
@@ -166,6 +169,12 @@ def main():
             train_loss = train(train_loader, denoiser, criterion, optimizer, epoch, args.noise_sd)
             test_loss = test(test_loader, denoiser, criterion, args.noise_sd, args.print_freq, args.outdir)
             test_acc = 'NA'
+        
+        elif args.objective == 'clip_feat_denoising':
+            train_loss = train(train_loader, denoiser, criterion, optimizer, epoch, args.noise_sd, clf)
+            test_loss = test(test_loader, denoiser, criterion, args.noise_sd, args.print_freq, args.outdir, clf)
+            test_acc = 'NA'
+
         elif args.objective in ['classification', 'stability']:
             train_loss = train(train_loader, denoiser, criterion, optimizer, epoch, args.noise_sd, clf)
             if args.dataset == 'imagenet':
@@ -197,7 +206,7 @@ def main():
             'optimizer': optimizer.state_dict(),
         }, os.path.join(args.outdir, 'checkpoint.pth.tar'))
 
-        if args.objective == 'denoising' and test_loss < best_loss:
+        if 'denoising' in args.objective and test_loss < best_loss:
             best_loss = test_loss
         elif args.objective in ['classification', 'stability'] and test_acc > best_acc:
             best_acc = test_acc
@@ -250,8 +259,13 @@ def train(loader: DataLoader, denoiser: torch.nn.Module, criterion, optimizer: O
         if classifier:
             outputs = classifier(outputs)
         
-        if isinstance(criterion, MSELoss):
+        if isinstance(criterion, MSELoss) and args.objective == 'denoising':
             loss = criterion(outputs, inputs)
+        elif isinstance(criterion, MSELoss) and args.objective == 'clip_feat_denoising':
+            with torch.no_grad():
+                clean_feat = classifier(inputs)
+                clean_feat = clean_feat.detach().clone()
+            loss = criterion(outputs, clean_feat)
         elif isinstance(criterion, CrossEntropyLoss):
             if args.objective == 'stability':
                 with torch.no_grad():

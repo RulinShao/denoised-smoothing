@@ -80,7 +80,7 @@ def main(args):
 
     return results
 
-def test(loader: DataLoader, model: torch.nn.Module, criterion, noise_sd: float, print_freq: int, outdir: str):
+def test(loader: DataLoader, model: torch.nn.Module, criterion, noise_sd: float, print_freq: int, outdir: str, clf=None):
     """
     A function to test the denoising performance of a denoiser (i.e. MSE objective)
         :param loader:DataLoader: test dataloader
@@ -97,6 +97,8 @@ def test(loader: DataLoader, model: torch.nn.Module, criterion, noise_sd: float,
 
     # switch to eval mode
     model.eval()
+    if clf is not None:
+        clf.eval()
 
     with torch.no_grad():
         for i, (inputs, targets) in enumerate(loader):
@@ -110,7 +112,13 @@ def test(loader: DataLoader, model: torch.nn.Module, criterion, noise_sd: float,
             noise = torch.randn_like(inputs, device='cuda') * noise_sd
 
             outputs = model(inputs + noise)
-            loss = criterion(outputs, inputs)
+            if clf is not None:
+                outputs = clf(outputs)
+                clean_feat = clf(inputs)
+                clean_feat = clean_feat.detach().clone()
+                loss = criterion(outputs, clean_feat)
+            else:
+                loss = criterion(outputs, inputs)
 
             # record loss
             losses.update(loss.item(), inputs.size(0))
@@ -127,13 +135,13 @@ def test(loader: DataLoader, model: torch.nn.Module, criterion, noise_sd: float,
                     i, len(loader), batch_time=batch_time,
                     data_time=data_time, loss=losses))
 
-        pil = toPilImage(inputs[0].cpu())
-        image_path = os.path.join(outdir, 'clean.png')
-        pil.save(image_path)
+        # pil = toPilImage(inputs[0].cpu())
+        # image_path = os.path.join(outdir, 'clean.png')
+        # pil.save(image_path)
 
-        pil = toPilImage(outputs[0].cpu())
-        image_path = os.path.join(outdir, 'denoised.png')
-        pil.save(image_path)
+        # pil = toPilImage(outputs[0].cpu())
+        # image_path = os.path.join(outdir, 'denoised.png')
+        # pil.save(image_path)
 
         return losses.avg
 
