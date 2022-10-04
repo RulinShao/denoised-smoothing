@@ -16,12 +16,25 @@ export IMAGENET_DIR=/home/ubuntu/data/ilsvrc2012/
 #     --batch 64
 # done
 
-python train_denoiser_clip.py \
+CUDA_VISIBLE_DEVICES=0,1,2,3 python train_denoiser_clip.py \
     --dataset imagenet \
-    --objective clip_feat_denoising \
+    --objective classification \
     --noise_sd 0.25 \
     --arch imagenet_dncnn \
-    --outdir denoiser/clip_vit16_feat_denoising/sigma_25 \
+    --outdir denoiser/clip_vit16/classification/sigma_25 \
+    --classifier ViT-B/16 \
+    --clf_head_ckpt /home/ubuntu/RobustCLIP/head_ckpt/imagenet/vit16/clip_vit16_nn2_clf.pth \
+    --epochs 25 \
+    --lr 1e-5 \
+    --batch 64
+
+
+CUDA_VISIBLE_DEVICES=0,1,2,3 python train_denoiser_clip.py \
+    --dataset imagenet \
+    --objective classification \
+    --noise_sd 0.5 \
+    --arch imagenet_dncnn \
+    --outdir denoiser/clip_vit16/classification/sigma_50 \
     --classifier ViT-B/16 \
     --clf_head_ckpt /home/ubuntu/RobustCLIP/head_ckpt/imagenet/vit16/clip_vit16_nn2_clf.pth \
     --epochs 25 \
