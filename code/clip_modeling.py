@@ -92,10 +92,10 @@ class CLIPModelForZeroShotClassication(nn.Module):
         super().__init__()
         self.model = model
         if args.dataset == 'imagenet':
-            # from imagenet_utils import imagenet_templates
-            # templates = imagenet_templates
+            from imagenet_utils import imagenet_templates
+            templates = imagenet_templates
             # NOTE: testing single prompting
-            templates = ['a photo of {}.']
+            # templates = ['a photo of {}.']
         else:
             templates = ['a photo of {}.']
         
