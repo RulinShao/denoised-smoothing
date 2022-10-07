@@ -77,7 +77,7 @@ def plot_curve():
 
 
 if __name__ == '__main__':
-    filename = 'certi_deno/clip_vit16_b_denoising/alpha_50/sigma_50'
+    filename = 'certi_deno/clip_vit16_feat_denoising/softmax_alpha_30/sigma_25'
     # filename = '/home/ubuntu/denoised-smoothing/code/certi_deno/clip_vit16_dual/sigma_25'
     print_radii(filename)
     # plot_curve()
