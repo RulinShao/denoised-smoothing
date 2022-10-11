@@ -79,7 +79,7 @@ class CLIPVisionLinearProbing(nn.Module):
     def forward(self, image_input):
         features = self.model.encode_image(image_input).type(image_input.type())
         logits = self.classifier(features)
-        return logits
+        return logits.softmax(dim=-1)  # rulin: added softmax to be in the same scale of similarity scores
 
 
 class CLIPModelForZeroShotClassication(nn.Module):
