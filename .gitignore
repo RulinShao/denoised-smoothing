@@ -109,3 +109,4 @@ log.txt
 *.tar
 denoiser/
 certi_deno/
+head_ckpt/

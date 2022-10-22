@@ -29,20 +29,20 @@ export IMAGENET_DIR=/home/ubuntu/data/ilsvrc2012/
 #     --lr 1e-5 \
 #     --batch 64 &
 
-CUDA_VISIBLE_DEVICES=0,1,2,3 python train_denoiser_clip.py \
-    --dataset cifar10 \
+CUDA_VISIBLE_DEVICES=2,3,4,5 python train_denoiser_clip.py \
+    --dataset imagenet \
     --objective clip_feat_denoising \
     --noise_sd 0.25 \
     --arch cifar_dncnn \
-    --outdir denoiser/cifar10/clip_vit_L14/clip_feat_denoising/sigma_25 \
+    --outdir denoiser/imagenet/clip_vit_L14/clip_feat_denoising/sigma_25 \
     --classifier ViT-L/14 \
     --batch 16 &
 
-CUDA_VISIBLE_DEVICES=4,5,6,7 python train_denoiser_clip.py \
-    --dataset cifar10 \
-    --objective clip_feat_denoising \
-    --noise_sd 0.5 \
-    --arch cifar_dncnn \
-    --outdir denoiser/cifar10/clip_vit_L14/clip_feat_denoising/sigma_50 \
-    --classifier ViT-L/14 \
-    --batch 16 &
+# CUDA_VISIBLE_DEVICES=4,5,6,7 python train_denoiser_clip.py \
+#     --dataset cifar10 \
+#     --objective clip_feat_denoising \
+#     --noise_sd 0.5 \
+#     --arch cifar_dncnn \
+#     --outdir denoiser/cifar10/clip_vit_L14/clip_feat_denoising/sigma_50 \
+#     --classifier ViT-L/14 \
+#     --batch 16 &
