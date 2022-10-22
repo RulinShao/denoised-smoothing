@@ -115,3 +115,99 @@ class Smooth(object):
         :return: a lower bound on the binomial proportion which holds true w.p at least (1 - alpha) over the samples
         """
         return proportion_confint(NA, N, alpha=2 * alpha, method="beta")[0]
+
+
+
+class SmoothOptimizeAlpha(object):
+    """A smoothed classifier g """
+
+    # to abstain, Smooth returns this int
+    ABSTAIN = -1
+
+    def __init__(self, base_classifier: torch.nn.Module, num_classes: int, sigma: float, clip_alpha_split_num: int):
+        """
+        :param base_classifier: maps from [batch x channel x height x width] to [batch x num_classes]
+        :param num_classes:
+        :param sigma: the noise level hyperparameter
+        """
+        self.base_classifier = base_classifier
+        self.num_classes = num_classes
+        self.sigma = sigma
+        self.clip_alpha_split_num = clip_alpha_split_num
+
+    def certify(self, x: torch.tensor, n0: int, n: int, alpha: float, batch_size: int) -> (int, float):
+        """ Monte Carlo algorithm for certifying that g's prediction around x is constant within some L2 radius.
+        With probability at least 1 - alpha, the class returned by this method will equal g(x), and g's prediction will
+        robust within a L2 ball of radius R around x.
+
+        :param x: the input [channel x height x width]
+        :param n0: the number of Monte Carlo samples to use for selection
+        :param n: the number of Monte Carlo samples to use for estimation
+        :param alpha: the failure probability
+        :param batch_size: batch size to use when evaluating the base classifier
+        :return: (predicted class, certified radius)
+                 in the case of abstention, the class will be ABSTAIN and the radius 0.
+        """
+        self.base_classifier.eval()
+
+        step_size = 1.0 / self.clip_alpha_split_num
+        max_pABar = 0.0
+        for i in range(self.clip_alpha_split_num + 1):
+            clip_alpha = i * step_size
+            # draw samples of f(x+ epsilon)
+            counts_selection = self._sample_noise(x, n0, batch_size, clip_alpha)
+            # use these samples to take a guess at the top class
+            cAHat = counts_selection.argmax().item()
+            # draw more samples of f(x + epsilon)
+            counts_estimation = self._sample_noise(x, n, batch_size, clip_alpha)
+            # use these samples to estimate a lower bound on pA
+            nA = counts_estimation[cAHat].item()
+            pABar = self._lower_confidence_bound(nA, n, alpha)
+            if pABar > max_pABar:
+                max_pABar = pABar
+
+        if pABar < 0.5:
+            return Smooth.ABSTAIN, 0.0
+        else:
+            radius = self.sigma * norm.ppf(pABar)
+            return cAHat, radius
+
+    def _sample_noise(self, x: torch.tensor, num: int, batch_size, clip_alpha) -> np.ndarray:
+        """ Sample the base classifier's prediction under noisy corruptions of the input x.
+
+        :param x: the input [channel x width x height]
+        :param num: number of samples to collect
+        :param batch_size:
+        :return: an ndarray[int] of length num_classes containing the per-class counts
+        """
+        with torch.no_grad():
+            counts = np.zeros(self.num_classes, dtype=int)
+            for _ in range(ceil(num / batch_size)):
+                this_batch_size = min(batch_size, num)
+                num -= this_batch_size
+
+                batch = x.repeat((this_batch_size, 1, 1, 1))
+                noise = torch.randn_like(batch, device='cuda') * self.sigma
+                outputs = self.base_classifier(batch + noise)
+                predictions = clip_alpha * outputs['zero_shot'] + (1 - clip_alpha) * outputs['linear_probe']
+                predictions = predictions.argmax(1)
+                counts += self._count_arr(predictions.cpu().numpy(), self.num_classes)
+            return counts
+
+    def _count_arr(self, arr: np.ndarray, length: int) -> np.ndarray:
+        counts = np.zeros(length, dtype=int)
+        for idx in arr:
+            counts[idx] += 1
+        return counts
+
+    def _lower_confidence_bound(self, NA: int, N: int, alpha: float) -> float:
+        """ Returns a (1 - alpha) lower confidence bound on a bernoulli proportion.
+
+        This function uses the Clopper-Pearson method.
+
+        :param NA: the number of "successes"
+        :param N: the number of total draws
+        :param alpha: the confidence level
+        :return: a lower bound on the binomial proportion which holds true w.p at least (1 - alpha) over the samples
+        """
+        return proportion_confint(NA, N, alpha=2 * alpha, method="beta")[0]

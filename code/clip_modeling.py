@@ -74,8 +74,11 @@ class CLIPVisionLinearProbing(nn.Module):
         num_classes = 1000 if args.dataset == 'imagenet' else 10
         hidden_dim = 768 if 'L' in args.model_type else 512
         self.classifier = MLPHead(num_classes, hidden_dim)
-        if not args.train_clf_head:
+        try:
+            assert args.train_clf_head
+        except:
             self.load_classifier()
+            
         # self.classifier = nn.Linear(512, 1000)
 
         self._freeze_encoder()
@@ -147,8 +150,12 @@ class CLIPDualStreamForClassification(nn.Module):
         if not self.alpha == 1.0:
             print(f"Initializing linear probing classifier...")
             self.vision_clf_model = CLIPVisionLinearProbing(model, args)
+        try:
+            self.return_both = args.optimize_alpha
+        except:
+            self.return_both = False
 
-    def forward(self, image_input, return_both=False):
+    def forward(self, image_input):
         if not self.alpha == 0.0:
             zero_shot_predictions = self.zero_shot_model(image_input)
         else:
@@ -159,7 +166,7 @@ class CLIPDualStreamForClassification(nn.Module):
         else:
             vision_clf_prefictions = 0.0
         
-        if return_both:
+        if self.return_both:
             return {'zero_shot': zero_shot_predictions, 'linear_probe': vision_clf_prefictions}
         
         predictions = self.alpha * zero_shot_predictions + (1 - self.alpha) * vision_clf_prefictions

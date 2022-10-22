@@ -1,6 +1,6 @@
 # evaluate a smoothed classifier on a dataset
 from architectures import get_architecture, IMAGENET_CLASSIFIERS
-from core import Smooth
+from core import Smooth, SmoothOptimizeAlpha
 from datasets import get_dataset, DATASETS, get_num_classes
 from time import time
 
@@ -16,7 +16,10 @@ parser = argparse.ArgumentParser(description='Certify many examples')
 parser.add_argument("--dataset", choices=DATASETS, help="which dataset")
 parser.add_argument("--clf_head_ckpt", type=str, default="/home/ubuntu/RobustCLIP/head_ckpt/imagenet/vit16/clip_vit16_nn2_clf.pth", 
                     help="path to save or saved sklearn classifier")
+parser.add_argument("--model_type", type=str, default='ViT-B/16')
 parser.add_argument("--dual_alpha", type=float, default=0.0)
+parser.add_argument("--optimize_alpha", action="store_true")
+parser.add_argument("--clip_alpha_split_num", type=int, default=10)
 parser.add_argument("--sigma", type=float, help="noise hyperparameter")
 parser.add_argument("--outfile", type=str, help="output file")
 parser.add_argument("--batch", type=int, default=1000, help="batch size")
@@ -44,7 +47,7 @@ else:
 
 if __name__ == "__main__":
     # load the base classifier
-    base_classifier, preprocess = clip.load("ViT-B/16")
+    base_classifier, preprocess = clip.load(args.model_type)
     base_classifier = CLIPDualStreamForClassification(base_classifier.cuda(), args=args)
 
     if args.denoiser != '':
@@ -60,7 +63,11 @@ if __name__ == "__main__":
     base_classifier = base_classifier.eval().cuda()
 
     # create the smooothed classifier g
-    smoothed_classifier = Smooth(base_classifier, get_num_classes(args.dataset), args.sigma)
+    if args.optimize_alpha:
+        print("Using sample-wise alpha")
+        smoothed_classifier = SmoothOptimizeAlpha(base_classifier, get_num_classes(args.dataset), args.sigma, args.clip_alpha_split_num)
+    else:
+        smoothed_classifier = Smooth(base_classifier, get_num_classes(args.dataset), args.sigma)
 
     # prepare output file
     if not os.path.exists(args.outfile.split('sigma')[0]):
