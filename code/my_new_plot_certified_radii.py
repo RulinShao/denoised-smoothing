@@ -28,9 +28,8 @@ class ApproximateAccuracy(Accuracy):
         return (df["correct"]).mean()
 
 
-def print_radii(filename):
+def print_radii(filename, ck_radii):
     # ck_radii = np.array([0.1 * r for r in range(10)])
-    ck_radii = np.array([0.0, 0.5, 1.0, 1.5, 2.0, 3.0])
 
     file = ApproximateAccuracy(filename)
     print('Loaded results from {}'.format(filename))
@@ -77,7 +76,12 @@ def plot_curve():
 
 
 if __name__ == '__main__':
-    filename = 'certi_deno/clip_vit16_feat_denoising/softmax_alpha_30/sigma_25'
+    filename = 'certi_deno/clip_vit16_feat_denoising/softmax_alpha_50/sigma_100'
     # filename = '/home/ubuntu/denoised-smoothing/code/certi_deno/clip_vit16_dual/sigma_25'
-    print_radii(filename)
+    
+    ck_radii = np.array([0.0, 0.25, 0.5, 0.75, 1.0])
+    ck_radii = np.array([0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75])
+    ck_radii = np.array([0.0, 0.5, 1.0, 1.5, 2.0, 3.0])
+    
+    print_radii(filename, ck_radii)
     # plot_curve()
