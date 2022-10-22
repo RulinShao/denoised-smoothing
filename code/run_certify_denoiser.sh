@@ -22,7 +22,25 @@ CUDA_VISIBLE_DEVICES=1,3,4,5 python certify_clip.py \
   --skip 100 \
   --denoiser denoiser/clip_vit16_feat_denoising/sigma_25/best.pth.tar \
   --optimize_alpha \
-  --clip_alpha_split_num 20 &
+  --clip_alpha_split_num 20 
+
+CUDA_VISIBLE_DEVICES=1,3,4,5 python certify_clip.py \
+  --dataset imagenet \
+  --sigma 0.5 \
+  --outfile certi_deno/optimize_alpha/clip_vit16_feat_denoising/sigma_50 \
+  --skip 100 \
+  --denoiser denoiser/clip_vit16_feat_denoising/sigma_50/best.pth.tar \
+  --optimize_alpha \
+  --clip_alpha_split_num 20 
+
+CUDA_VISIBLE_DEVICES=1,3,4,5 python certify_clip.py \
+  --dataset imagenet \
+  --sigma 1.0 \
+  --outfile certi_deno/optimize_alpha/clip_vit16_feat_denoising/sigma_100 \
+  --skip 100 \
+  --denoiser denoiser/clip_vit16_feat_denoising/sigma_100/best.pth.tar \
+  --optimize_alpha \
+  --clip_alpha_split_num 20 
 
 # CUDA_VISIBLE_DEVICES=4,5,6,7 python certify_clip.py \
 #   --dataset imagenet \
