@@ -29,7 +29,7 @@ def get_dataset(dataset: str, split: str, preprocess=None) -> Dataset:
         return _imagenet32(split)
 
     elif dataset == "cifar10":
-        return _cifar10(split)
+        return _cifar10(split, preprocess)
 
 
 def get_num_classes(dataset: str):
@@ -65,15 +65,22 @@ _CIFAR10_MEAN = [0.4914, 0.4822, 0.4465]
 _CIFAR10_STDDEV = [0.2023, 0.1994, 0.2010]
 
 
-def _cifar10(split: str) -> Dataset:
+def _cifar10(split: str, preprocess=None) -> Dataset:
     dataset_path = os.path.join(os.getenv('PT_DATA_DIR', 'datasets'), 'dataset_cache')
+    
     if split == "train":
+        if preprocess is not None:
+            return datasets.CIFAR10(dataset_path, train=True, download=True, transform=preprocess)
+        
         return datasets.CIFAR10(dataset_path, train=True, download=True, transform=transforms.Compose([
             transforms.RandomCrop(32, padding=4),
             transforms.RandomHorizontalFlip(),
             transforms.ToTensor()
         ]))
     elif split == "test":
+        if preprocess is not None:
+            return datasets.CIFAR10(dataset_path, train=False, download=True, transform=preprocess)
+            
         return datasets.CIFAR10(dataset_path, train=False, download=True, transform=transforms.ToTensor())
 
     else:
