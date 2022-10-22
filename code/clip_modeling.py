@@ -18,7 +18,7 @@ def requires_grad_(model:torch.nn.Module, requires_grad:bool) -> None:
         param.requires_grad_(requires_grad)
 
 
-class LinearHead(nn.Module):
+class MLPHead(nn.Module):
     def __init__(self) -> None:
         super().__init__()
         self.linear1 = nn.Linear(512, 2048)
@@ -62,7 +62,7 @@ class CLIPVisionLinearProbing(nn.Module):
 
         self.args = args
         self.model = model
-        self.classifier = LinearHead()
+        self.classifier = MLPHead()
         self.load_classifier()
         # self.classifier = nn.Linear(512, 1000)
 
@@ -136,7 +136,7 @@ class CLIPDualStreamForClassification(nn.Module):
             print(f"Initializing linear probing classifier...")
             self.vision_clf_model = CLIPVisionLinearProbing(model, args)
 
-    def forward(self, image_input):
+    def forward(self, image_input, return_both=False):
         if not self.alpha == 0.0:
             zero_shot_predictions = self.zero_shot_model(image_input)
         else:
@@ -146,6 +146,9 @@ class CLIPDualStreamForClassification(nn.Module):
             vision_clf_prefictions = self.vision_clf_model(image_input)
         else:
             vision_clf_prefictions = 0.0
+        
+        if return_both:
+            return {'zero_shot': zero_shot_predictions, 'linear_probe': vision_clf_prefictions}
         
         predictions = self.alpha * zero_shot_predictions + (1 - self.alpha) * vision_clf_prefictions
         return predictions
