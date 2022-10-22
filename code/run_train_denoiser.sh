@@ -17,26 +17,32 @@ export IMAGENET_DIR=/home/ubuntu/data/ilsvrc2012/
 # done
 
 
+# CUDA_VISIBLE_DEVICES=0,1,2,3 python train_denoiser_clip.py \
+#     --dataset imagenet \
+#     --objective clip_feat_denoising \
+#     --noise_sd 0.25 \
+#     --arch imagenet_dncnn \
+#     --outdir denoiser/clip_vit_L14/clip_feat_denoising/sigma_25 \
+#     --classifier ViT-L/14 \
+#     --clf_head_ckpt /home/ubuntu/RobustCLIP/head_ckpt/imagenet/clip/clip_vit_L14_nn2_clf.pth \
+#     --epochs 25 \
+#     --lr 1e-5 \
+#     --batch 64 &
+
 CUDA_VISIBLE_DEVICES=0,1,2,3 python train_denoiser_clip.py \
-    --dataset imagenet \
-    --objective stability \
-    --noise_sd 1.0 \
-    --arch imagenet_dncnn \
-    --outdir denoiser/clip_vit16/stability/sigma_100 \
-    --classifier ViT-B/16 \
-    --clf_head_ckpt /home/ubuntu/RobustCLIP/head_ckpt/imagenet/vit16/clip_vit16_nn2_clf.pth \
-    --epochs 25 \
-    --lr 1e-5 \
-    --batch 64 &
+    --dataset cifar10 \
+    --objective clip_feat_denoising \
+    --noise_sd 0.25 \
+    --arch cifar_dncnn \
+    --outdir denoiser/cifar10/clip_vit_L14/clip_feat_denoising/sigma_25 \
+    --classifier ViT-L/14 \
+    --batch 16 &
 
 CUDA_VISIBLE_DEVICES=4,5,6,7 python train_denoiser_clip.py \
-    --dataset imagenet \
-    --objective denoising \
-    --noise_sd 1.0 \
-    --arch imagenet_dncnn \
-    --outdir denoiser/clip_vit16/denoising/sigma_100 \
-    --classifier ViT-B/16 \
-    --clf_head_ckpt /home/ubuntu/RobustCLIP/head_ckpt/imagenet/vit16/clip_vit16_nn2_clf.pth \
-    --epochs 25 \
-    --lr 1e-5 \
-    --batch 64 &
+    --dataset cifar10 \
+    --objective clip_feat_denoising \
+    --noise_sd 0.5 \
+    --arch cifar_dncnn \
+    --outdir denoiser/cifar10/clip_vit_L14/clip_feat_denoising/sigma_50 \
+    --classifier ViT-L/14 \
+    --batch 16 &

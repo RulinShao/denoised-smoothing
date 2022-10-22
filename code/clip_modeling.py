@@ -19,11 +19,11 @@ def requires_grad_(model:torch.nn.Module, requires_grad:bool) -> None:
 
 
 class MLPHead(nn.Module):
-    def __init__(self) -> None:
+    def __init__(self, num_classes) -> None:
         super().__init__()
         self.linear1 = nn.Linear(512, 2048)
         self.act1 = nn.ReLU()
-        self.linear2 = nn.Linear(2048, 1000)
+        self.linear2 = nn.Linear(2048, num_classes)
     
     def forward(self, features):
         out = self.linear1(features)
@@ -62,7 +62,13 @@ class CLIPVisionLinearProbing(nn.Module):
 
         self.args = args
         self.model = model
-        self.classifier = MLPHead()
+        if args.dataset == 'imagenet':
+            num_classes = 1000
+        elif args.dataset == 'cifar10':
+            num_classes = 10
+        else:
+            raise AttributeError
+        self.classifier = MLPHead(num_classes)
         self.load_classifier()
         # self.classifier = nn.Linear(512, 1000)
 
