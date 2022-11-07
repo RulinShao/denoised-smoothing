@@ -15,7 +15,7 @@ class Smooth(object):
     # to abstain, Smooth returns this int
     ABSTAIN = -1
 
-    def __init__(self, base_classifier: torch.nn.Module, num_classes: int, sigma: float):
+    def __init__(self, base_classifier: torch.nn.Module, num_classes: int, sigma: float, diffusion=False):
         """
         :param base_classifier: maps from [batch x channel x height x width] to [batch x num_classes]
         :param num_classes:
@@ -24,6 +24,7 @@ class Smooth(object):
         self.base_classifier = base_classifier
         self.num_classes = num_classes
         self.sigma = sigma
+        self.diffusion_input = diffusion
 
     def certify(self, x: torch.tensor, n0: int, n: int, alpha: float, batch_size: int) -> (int, float):
         """ Monte Carlo algorithm for certifying that g's prediction around x is constant within some L2 radius.
@@ -93,7 +94,10 @@ class Smooth(object):
                 num -= this_batch_size
 
                 batch = x.repeat((this_batch_size, 1, 1, 1))
+                if self.diffusion_input:
+                    batch = batch * 2 - 1
                 noise = torch.randn_like(batch, device='cuda') * self.sigma
+                
                 predictions = self.base_classifier(batch + noise).argmax(1)
                 counts += self._count_arr(predictions.cpu().numpy(), self.num_classes)
             return counts
@@ -124,7 +128,7 @@ class SmoothOptimizeAlpha(object):
     # to abstain, Smooth returns this int
     ABSTAIN = -1
 
-    def __init__(self, base_classifier: torch.nn.Module, num_classes: int, sigma: float, clip_alpha_split_num: int):
+    def __init__(self, base_classifier: torch.nn.Module, num_classes: int, sigma: float, clip_alpha_split_num: int, diffusion=False):
         """
         :param base_classifier: maps from [batch x channel x height x width] to [batch x num_classes]
         :param num_classes:
@@ -134,6 +138,7 @@ class SmoothOptimizeAlpha(object):
         self.num_classes = num_classes
         self.sigma = sigma
         self.clip_alpha_split_num = clip_alpha_split_num
+        self.diffusion_input = diffusion
 
     def certify(self, x: torch.tensor, n0: int, n: int, alpha: float, batch_size: int) -> (int, float):
         """ Monte Carlo algorithm for certifying that g's prediction around x is constant within some L2 radius.
@@ -187,6 +192,8 @@ class SmoothOptimizeAlpha(object):
                 num -= this_batch_size
 
                 batch = x.repeat((this_batch_size, 1, 1, 1))
+                if self.diffusion_input:
+                    batch = batch * 2 - 1
                 noise = torch.randn_like(batch, device='cuda') * self.sigma
                 outputs = self.base_classifier(batch + noise)
                 predictions = clip_alpha * outputs['zero_shot'] + (1 - clip_alpha) * outputs['linear_probe']

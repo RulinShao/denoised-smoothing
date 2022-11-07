@@ -23,21 +23,23 @@ class MLPHead(nn.Module):
         super().__init__()
         self.num_classes = num_classes
         
-        if num_classes == 1000:        
-            self.linear1 = nn.Linear(hidden_dim, 2048)
-            self.act1 = nn.ReLU()
-            self.linear2 = nn.Linear(2048, num_classes)
-        elif num_classes == 10:
-            self.linear = nn.Linear(hidden_dim, 10)
+        # if num_classes == 1000:        
+        #     self.linear1 = nn.Linear(hidden_dim, 2048)
+        #     self.act1 = nn.ReLU()
+        #     self.linear2 = nn.Linear(2048, num_classes)
+        # elif num_classes == 10:
+            # self.linear = nn.Linear(hidden_dim, 10)
+        self.linear = nn.Linear(hidden_dim, num_classes)
     
     def forward(self, features):
-        if self.num_classes == 1000:
-            out = self.linear1(features)
-            out = self.act1(out)
-            out = self.linear2(out)
-            return out
-        elif self.num_classes == 10:
-            return self.linear(features)
+        # if self.num_classes == 1000:
+        #     out = self.linear1(features)
+        #     out = self.act1(out)
+        #     out = self.linear2(out)
+        #     return out
+        # elif self.num_classes == 10:
+        #     return self.linear(features)
+        return self.linear(features)
 
 class LogisticRegression(nn.Module):
      def __init__(self):
@@ -75,11 +77,9 @@ class CLIPVisionLinearProbing(nn.Module):
         hidden_dim = 768 if 'L' in args.model_type else 512
         self.classifier = MLPHead(num_classes, hidden_dim)
         try:
-            assert args.train_clf_head
+            assert args is not None and args.train_clf_head
         except:
             self.load_classifier()
-            
-        # self.classifier = nn.Linear(512, 1000)
 
         self._freeze_encoder()
     
@@ -97,6 +97,33 @@ class CLIPVisionLinearProbing(nn.Module):
         return logits.softmax(dim=-1)  # rulin: added softmax to be in the same scale of similarity scores
 
 
+class ImageNetCLIPLinear(nn.Module):
+    def __init__(self, model, args=None):
+        super().__init__()
+
+        self.args = args
+        self.model = model
+
+        num_classes = 1000
+        hidden_dim = 768
+        self.classifier = MLPHead(num_classes, hidden_dim)
+        self.load_classifier()
+        self._freeze_encoder()
+    
+    def _freeze_encoder(self,):
+        requires_grad_(self.model, False)
+    
+    def load_classifier(self):
+        ckpt_path = 'head_ckpt/imagenet_clip_vit_L14_nn2_clf.pth'
+        print(f"Loading clf head from {ckpt_path}")
+        self.classifier.load_state_dict(torch.load(ckpt_path, map_location=self.classifier.linear1.weight.device))
+    
+    def forward(self, image_input):
+        features = self.model.encode_image(image_input).type(image_input.type())
+        logits = self.classifier(features)
+        return logits.softmax(dim=-1)  # rulin: added softmax to be in the same scale of similarity scores
+
+
 class CLIPModelForZeroShotClassication(nn.Module):
     """
     given a set of prompting templates, 
@@ -106,13 +133,13 @@ class CLIPModelForZeroShotClassication(nn.Module):
     def __init__(self, model, classes=imagenet_classes, args=None):
         super().__init__()
         self.model = model
-        if args.dataset == 'imagenet':
+        if args is not None and args.dataset != 'imagenet':
+            templates = ['a photo of {}.']
+        else:
             from imagenet_utils import imagenet_templates
             templates = imagenet_templates
-            # NOTE: testing single prompting
             # templates = ['a photo of {}.']
-        else:
-            templates = ['a photo of {}.']
+                
         
         with torch.no_grad():
             text_features = []

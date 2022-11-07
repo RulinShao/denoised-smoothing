@@ -110,3 +110,7 @@ log.txt
 denoiser/
 certi_deno/
 head_ckpt/
+
+test_prompt*
+statistics_of_consistency.py
+sigma_*

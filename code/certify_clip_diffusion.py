@@ -13,8 +13,19 @@ from torch.utils.data import DataLoader
 import clip
 from clip_modeling import CLIPVisionLinearProbing, CLIPDualStreamForClassification
 
+from stable_diffusion.image_denoise import *
 
+
+defaults = dict(
+    clip_denoised=True,
+    num_samples=100,
+    batch_size=16,
+    use_ddim=False,
+)
+defaults.update(model_and_diffusion_defaults())
 parser = argparse.ArgumentParser(description='Certify many examples')
+add_dict_to_argparser(parser, defaults)
+
 parser.add_argument("--dataset", default='imagenet', choices=DATASETS, help="which dataset")
 parser.add_argument("--clf_head_ckpt", type=str, default="head_ckpt/imagenet_clip_vit_L14_nn2_clf.pth", 
                     help="path to save or saved sklearn classifier")
@@ -38,7 +49,18 @@ parser.add_argument('--azure_datastore_path', type=str, default='',
 parser.add_argument('--philly_imagenet_path', type=str, default='',
                     help='Path to imagenet on philly')
 parser.add_argument('--evaluate_sanity', action='store_true')
+
+parser.add_argument('--model_path', default='/home/dacheng.li/checkpoints/diffusion/cifar10_uncond_50M_500K.pt')
 args = parser.parse_args()
+
+args.image_size = 32
+args.num_channels = 128
+args.num_res_blocks = 3
+args.learn_sigma = True
+args.dropout = 0.3
+args.diffusion_steps = 4000
+args.noise_schedule = 'cosine'
+args.model_path = '/home/dacheng.li/checkpoints/diffusion/cifar10_uncond_50M_500K.pt'
 
 if args.azure_datastore_path:
     os.environ['IMAGENET_DIR_AZURE'] = os.path.join(args.azure_datastore_path, 'datasets/imagenet_zipped')
@@ -54,29 +76,21 @@ if __name__ == "__main__":
     # load the base classifier
     base_classifier, preprocess = clip.load(args.model_type)
     base_classifier = CLIPDualStreamForClassification(base_classifier.cuda(), classes, args=args)
-
-    # add denoiser
-    if args.denoiser != '':
-        checkpoint = torch.load(args.denoiser)
-        if "off-the-shelf-denoiser" in args.denoiser:
-            denoiser = get_architecture('orig_dncnn', args.dataset)
-            denoiser.load_state_dict(checkpoint)
-        else:
-            denoiser = get_architecture(checkpoint['arch'] ,args.dataset)
-            denoiser.load_state_dict(checkpoint['state_dict'])
-        base_classifier = torch.nn.Sequential(denoiser, base_classifier)
     
     # add normalize layer
     normalize_clip = preprocess.transforms[-1]
     normalize_layer = NormalizeLayer(normalize_clip.mean, normalize_clip.std)
     base_classifier = torch.nn.Sequential(normalize_layer, base_classifier)
-    preprocess.transforms = preprocess.transforms[:-1]
+
+    # add denoiser
+    denoiser = DiffusionDenoiser4ViT(args=args)
+    base_classifier = torch.nn.Sequential(denoiser, base_classifier)
 
     # set to eval mode
     base_classifier = base_classifier.eval().cuda()
 
     # iterate through the dataset
-    dataset = get_dataset(args.dataset, 'test', preprocess=preprocess)
+    dataset = get_dataset(args.dataset, 'test')
     
     if args.evaluate_sanity:
     # test sanity accuracy
@@ -94,9 +108,9 @@ if __name__ == "__main__":
         # create the smooothed classifier g
         if args.optimize_alpha:
             print("Using sample-wise alpha")
-            smoothed_classifier = SmoothOptimizeAlpha(base_classifier, get_num_classes(args.dataset), args.sigma, args.clip_alpha_split_num)
+            smoothed_classifier = SmoothOptimizeAlpha(base_classifier, get_num_classes(args.dataset), args.sigma, args.clip_alpha_split_num, diffusion=True)
         else:
-            smoothed_classifier = Smooth(base_classifier, get_num_classes(args.dataset), args.sigma)
+            smoothed_classifier = Smooth(base_classifier, get_num_classes(args.dataset), args.sigma, diffusion=True)
 
         # prepare output file
         if not os.path.exists(args.outfile.split('sigma')[0]):

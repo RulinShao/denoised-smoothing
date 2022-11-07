@@ -76,12 +76,12 @@ def plot_curve():
 
 
 if __name__ == '__main__':
-    filename = 'certi_deno/clip_vit16_feat_denoising/softmax_alpha_50/sigma_100'
+    filename = 'certi_clip_imagenet/zero_shot_clip_large/sigma_100'
     # filename = '/home/ubuntu/denoised-smoothing/code/certi_deno/clip_vit16_dual/sigma_25'
     
     ck_radii = np.array([0.0, 0.25, 0.5, 0.75, 1.0])
-    ck_radii = np.array([0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75])
-    ck_radii = np.array([0.0, 0.5, 1.0, 1.5, 2.0, 3.0])
+    # ck_radii = np.array([0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75])
+    # ck_radii = np.array([0.0, 0.5, 1.0, 1.5, 2.0, 3.0])
     
     print_radii(filename, ck_radii)
     # plot_curve()
