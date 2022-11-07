@@ -114,3 +114,4 @@ head_ckpt/
 test_prompt*
 statistics_of_consistency.py
 sigma_*
+certi_*
